@@ -1,0 +1,796 @@
+<?php
+
+/**
+ * @file 通用模块
+ */
+
+/**
+ * 后台管理通用菜单钩子
+ */
+function common_menu() {
+    $items = array();
+    //Ajax图片上传通用方法
+    $items['admin/image/upload/common'] = array(
+        'file' => 'common.admin.inc',
+        'page callback' => 'image_upload_common',
+        'page arguments' => array(4),//上传目录
+        'access callback' => true,
+        'type' => MENU_CALLBACK,
+    );
+    //图片生成缩略图调用方法
+    $items['admin/image/upload/thumbnail'] = array(
+        'file' => 'common.admin.inc',
+        'page callback' => 'image_upload_thumbnail',
+        'page arguments' => array(4),
+        'access callback' => true,
+        'type' => MENU_CALLBACK,
+    );
+    //图片服务器管理
+    $items['admin/image/server/manage'] = array(
+        'file' => 'common.admin.inc',
+        'page callback' => 'image_server_manage',
+        'page arguments' => array(4),
+        'access callback' => true,
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+/**
+ * 实现用户退出钩子，销毁session并退出
+ * @param object $user
+ */
+function common_user_logout($user) {
+
+    session_destroy();
+    drupal_goto('admin');//调整到管理首页
+}
+
+/**
+ * 生成富文本编辑器字段
+ *  @param array $config
+ *  $config = array(
+ *      'field_name'     => '',//字段名，必须
+ *      'default_value'  => '',//默认值，可选，默认为空
+ *      'sub_dir'        => 'default',//图片上传的子目录，可选，默认为default
+ *  );
+ * @return array
+ */
+function plum_textarea_content_field(array $config) {
+    $common_path    = drupal_get_path('module', 'common');
+    //设置配置信息
+    $default_config = array(
+        'field_name'        => 'file_path',
+        'default_value'     => '',
+        'sub_dir'           => 'default',
+    );
+    $merge_config = array_merge($default_config, $config);
+
+    drupal_add_js($common_path . '/kindeditor/kindeditor.js');
+    //drupal_add_js($common_path . '/kindeditor/lang/zh_CN.js');
+    drupal_add_js($common_path . '/js/textarea_kindeditor.js');
+
+    drupal_add_css($common_path . '/css/common.css');
+    drupal_add_css($common_path . '/kindeditor/themes/default/default.css');
+
+    $default_value  = $merge_config['default_value'];
+    $field_name     = $merge_config['field_name'];
+    $sub_dir        = $merge_config['sub_dir'];
+    $div = array(
+        '<textarea name="'.$field_name.'" id="ke-txt-content" style="height:200px;visibility:hidden;">'.$default_value.'</textarea>',
+        '<input type="hidden" name="sub_dir" id="sub-dir" value="'.$sub_dir.'" />',
+        '<input type="hidden" name="ke_textarea_name" value="'.$field_name.'" />',
+    );
+    $div = implode('', $div);
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => $div,
+    );
+    return $element;
+}
+
+/**
+ * 二级联动输入表单
+ * @param array $config
+ *  $config = array(
+ *      'label_title'           => '请选择',//字段标题，必须
+ *      'first_field_name'      => 'first_level',//一级选择框字段名，可选
+ *      'second_field_name'     => 'second_level',//二级选择框字段名，可选
+ *      'first_field_title'     => '请选择一级类别',//一级选择框提示标题，可选
+ *      'second_field_title'    => '请选择二级类别',//二级选择框提示标题，可选
+ *      'first_default_value'   => 0,//一级选择框默认值，可选
+ *      'second_default_value'  => 0,//二级选择框默认值，可选
+ *      'level_data'            => '级联数据',
+ *          //格式如下：
+ *          array(
+ *              array(
+ *                  'name'  => '一级1',
+ *                  'value' => 1,
+ *                  'son'   => array(array('name'=>'二级11', 'value'=>11),array('name'=>'二级12', 'value'=>12)),
+ *              ),
+ *              array(
+ *                  'name'  => '一级2',
+ *                  'value' => 2,
+ *                  'son'   => array(array('name'=>'二级21', 'value'=>21),array('name'=>'二级22', 'value'=>22)),
+ *              )
+ *          );
+ *      'form_id'               => 'form',//当前表单ID，可选，默认为form
+ *      'form_first_verify'     => 0,//是否对一级选择进行验证，可选，默认0
+ *      'form_second_verify'    => 0,//是否对二级选择进行验证，可选，默认0
+ *  );
+ * @return array
+ */
+function plum_level_linkage_field(array $config) {
+    $common_path    = drupal_get_path('module', 'common');
+    $default_config = array(
+        'label_title'           => '请选择',
+        'first_field_name'      => 'first_level',
+        'second_field_name'     => 'second_level',
+        'first_field_title'     => '请选择一级类别',
+        'second_field_title'    => '请选择二级类别',
+        'first_default_value'   => 0,
+        'second_default_value'  => 0,
+        'level_data'            => array(),
+        'form_id'               => 'form',
+        'form_first_verify'     => 1,
+        'form_second_verify'    => 1,
+    );
+    $merge_config = array_merge($default_config, $config);
+    $data = $merge_config['level_data'];
+    $form_verify  = "{$merge_config['form_id']}|{$merge_config['form_first_verify']}|{$merge_config['form_second_verify']}";
+    //加载静态文件
+    drupal_add_js($common_path . '/js/level-linkage.js');
+
+    $first_select_html  = '<select id="first-select" class="first-select form-control" style="float: left;width: 33%;margin-right: 20px;">';
+    $first_select_html .= '<option value="0">----'.$merge_config['first_field_title'].'----</option>';
+    foreach ($data as $val) {
+        if (intval($val['value']) == $merge_config['first_default_value']) {
+            $first_select_html .= '<option value="'.$val['value'].'" selected="selected">'.$val['name'].'</option>';
+        } else {
+            $first_select_html .= '<option value="'.$val['value'].'">'.$val['name'].'</option>';
+        }
+    }
+    $first_select_html .= '</select>';
+
+    $second_select_html = '<select class="second-select form-control" style="float: left;width: 33%;margin-right: 20px;">';
+    $second_select_html .= '<option value="0">----'.$merge_config['second_field_title'].'----</option>';
+    $second_select_html .= '</select>';
+    foreach ($data as $val) {
+        $second_select_html .= '<select class="second-select form-control" style="float: left;width: 33%;margin-right: 20px;display: none;">';
+        if (isset($val['son']) && !empty($val['son'])) {
+            foreach ($val['son'] as $vval) {
+                if ($vval['value'] == $merge_config['second_default_value']) {
+                    $second_select_html .= '<option value="'.$vval['value'].'" selected="selected">'.$vval['name'].'</option>';
+                } else {
+                    $second_select_html .= '<option value="'.$vval['value'].'">'.$vval['name'].'</option>';
+                }
+            }
+        } else {
+            $second_select_html .= '<option value="0">无对应子项</option>';
+        }
+        $second_select_html .= '</select>';
+    }
+
+    $div = array(
+        '<div style="overflow: auto;margin-bottom: 12px;">',
+        '<input type="hidden" value="'.$merge_config['first_default_value'].'" name="'.$merge_config['first_field_name'].'" id="first-level" />',
+        '<input type="hidden" value="'.$merge_config['second_default_value'].'" name="'.$merge_config['second_field_name'].'" id="second-level" />',
+        '<input type="hidden" name="level_verify" id="level-verify" value="'.$form_verify.'" />',
+        '<label style="display: block;" for="first-select" >'.$merge_config['label_title'].'</label>',
+        $first_select_html,
+        $second_select_html,
+        '</div>',
+    );
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => implode('', $div),
+    );
+    return $element;
+}
+
+/**
+ * 生成数字权重字段
+ * @param array $config
+ *  $config = array(
+ *      'label_title'    => '权重', //字段标签标题，默认为'权重'
+ *      'field_name'     => 'weight',//字段名，默认为'weight'
+ *      'default_value'  => 0,//默认值，可选，默认为空
+ *      'min'            => 0,//最小值，可选，默认为0
+ *      'max'            => 100,//最大值，可选，默认为100
+ *      'step'           => 1,//选择步进值，可选，默认为1
+ *  );
+ * @return array
+ */
+function plum_number_weight_field(array $config) {
+    $common_path    = drupal_get_path('module', 'common');
+    //设置配置信息
+    $default_config = array(
+        'label_title'       => '排序权重',
+        'field_name'        => 'weight',
+        'default_value'     => 0,
+        'min'               => 0,
+        'max'               => 100,
+        'step'              => 1,
+    );
+    $merge_config = array_merge($default_config, $config);
+    //处理变量
+    $weight_config = "{$merge_config['min']}|{$merge_config['max']}|{$merge_config['step']}|{$merge_config['default_value']}";
+    //加载静态文件
+    drupal_add_css($common_path . '/slider/jquery-ui.min.css');
+    drupal_add_css($common_path . '/slider/jquery-ui-slider-pips.css');
+    drupal_add_css($common_path . '/slider/plum-slider.css');
+
+    drupal_add_js($common_path . '/slider/jquery-ui.min.js');
+    drupal_add_js($common_path . '/slider/jquery-ui-slider-pips.js');
+    drupal_add_js($common_path . '/slider/plum-slider.js');
+
+    $div = array(
+        '<div >',
+        '<label style="padding-right: 30px;" for="plum-edit-number-weight">'.$merge_config['label_title'].'</label>',
+        '<input style="display: inline; width: 200px;" class="form-control plum-number-weight-input" readonly id="plum-edit-number-weight" name="'.$merge_config['field_name'].'" type="text" value="'.$merge_config['default_value'].'" />',
+        '<div class="plum-slider"></div>',
+        '<input type="hidden" id="plum-weight-config-value" value="'.$weight_config.'" />',
+        '</div>'
+    );
+
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => implode('', $div),
+    );
+    return $element;
+}
+
+/**
+ * 生成多图片上传字段
+ *  @param array $config
+ *  $config = array(
+ *      'field_name'        => '',//字段名，必须
+ *      'default_values'    => '',//默认值，可选，默认为空
+ *      'file_type'         => 'default',//图片上传的子目录，可选，默认为default
+ *      'upload_multi'      => false,//是否上传多张，可选，默认为false
+ *  );
+ * @return array
+ */
+function plum_multi_image_field(array $config) {
+    $common_path    = drupal_get_path('module', 'common');
+    //设置配置信息
+    $default_config = array(
+        'field_name'        => 'file_path',
+        'default_values'    => array(),
+        'file_type'         => 'png|gif|jpg|jpeg',
+        'upload_multi'      => false,
+        'is_image'          => false,
+    );
+    $merge_config = array_merge($default_config, $config);
+    //加载静态文件
+    drupal_add_css($common_path . '/kindeditor/themes/default/default.css');
+    drupal_add_js($common_path . '/kindeditor/kindeditor-min.js');
+    drupal_add_js($common_path . '/kindeditor/lang/zh_CN.js');
+    drupal_add_js($common_path . '/js/image-select.js');
+
+    //处理变量
+    $pictures = $merge_config['default_values'];
+    $image_box = '';
+    if (is_array($pictures) && count($pictures) > 0) {
+        foreach ($pictures as $value) {
+            $img = '<span><img src="' . $value . '" class="img-thumbnail" width="160px">'.
+                '<input type="hidden" name="pictures[]" value="' .$value. '"/>'.
+                '<span class="close-img">X</span><span class="check-img"></span></span>';
+            $image_box .= $img;
+        }
+    }
+
+    $div = array(
+        '<div>',
+        '<div><button type="button" id="multi-upload-button" class="btn btn-info">上传图片</button></div>',
+        '<div id="image-display-box" class="row">'.$image_box.'</div>',
+        '</div>'
+    );
+
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => implode('', $div),
+    );
+    return $element;
+}
+
+/**
+ *
+ * @param array $config
+ * @return array
+ */
+function plum_file_upload_field(array $config = array()) {
+    $common_path = drupal_get_path('module', 'common');
+    $default_config = array(
+        'request_uri'       => '',
+        'field_name'        => 'file_path',
+        'default_value'     => '',
+        'file_type'         => 'png|gif|jpg|jpeg',
+        'upload_multi'      => false,
+        'is_image'          => false,
+    );
+    $merge_config = array_merge($default_config, $config);
+
+    drupal_add_css($common_path . '/uploadify/uploadify.css');
+    drupal_add_js($common_path . '/uploadify/jquery.uploadify.js');
+    drupal_add_js($common_path . '/js/load_bar.js');
+
+    //处理变量
+    $request_uri    = $merge_config['request_uri'];
+    $tmp_arr        = explode('|', $merge_config['file_type']);
+    foreach ($tmp_arr as $key => $val) {
+        $tmp_arr[$key] = '*.' . $val;
+    }
+    $file_type      = implode('; ', $tmp_arr);
+    $upload_multi   = $merge_config['upload_multi'];
+    $field_name     = $merge_config['field_name'];
+    $default_value  = $merge_config['default_value'];
+    $div = array(
+        '<div>',
+        '<input type="hidden" name="request_uri" id="request-uri" value="'.$request_uri.'" />',
+        '<input type="hidden" name="file_type" id="file-type" value="'.$file_type.'" />',
+        '<input type="hidden" name="upload_multi" id="upload-multi" value="'.$upload_multi.'" />',
+        '<input id="file-upload" name="file_upload" type="file" >',
+        '<input id="file-path" class="form-control form-text" name="'.$field_name.'" type="text" readonly="readonly" value="'.$default_value.'">',
+        '</div>'
+    );
+
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => implode('', $div),
+    );
+    return $element;
+}
+
+/**
+ * 生成摘要检查字段
+ * @param array $config
+ *  $config = array(
+ *      'title'          => '',//字段标题，必须
+ *      'default_value'  => '',//默认值，可选，默认为空
+ *      'min_length'     => 10,//摘要最短字数，可选，默认10
+ *      'max_length'     => 100,//摘要最长字数，可选，默认100
+ *      'placeholder'    => '摘要，最少10个字长，最多100个字长',//字段占位值，可选
+ *      'form_id'        => 'form',//当前表单ID，可选，默认为form
+ *      'form_verify'    => 0,//是否对表单进行缩略图未上传验证，可选，默认0
+ *  );
+ * @return array
+ */
+function plum_brief_check_field (array $config) {
+    $common_path = drupal_get_path('module', 'common');
+    $default_config = array(
+        'title'             => '',
+        'default_value'     => '',
+        'max_length'        => 100,
+        'min_length'        => 10,
+        'placeholder'       => '',
+        'form_id'           => 'form',
+        'form_verify'       => 0,
+    );
+    $merge_config = array_merge($default_config, $config);
+    $brief_length = "{$merge_config['min_length']}|{$merge_config['max_length']}";
+    $form_verify  = "{$merge_config['form_id']}|{$merge_config['form_verify']}";
+    $required     = $merge_config['form_verify'] ? true : false;
+    $placeholder  = $merge_config['placeholder'] ? $merge_config['placeholder'] : "摘要，最短{$merge_config['min_length']}个字，最长{$merge_config['max_length']}个字";
+    $div = array(
+        '<div><span>'.$placeholder.'  </span>',
+        '<span id="brief-msg"></span>',
+        '<input type="hidden" name="brief_length" id="brief-length" value="'.$brief_length.'" />',
+        '<input type="hidden" name="brief_verify" id="brief-verify" value="'.$form_verify.'" />',
+        '</div>',
+    );
+    $div = implode('', $div);
+
+    $element = array(
+        '#type' => 'textfield',
+        '#title' => t($merge_config['title']),
+        '#default_value' => $merge_config['default_value'],
+        '#attributes'   => array('placeholder' => $placeholder, 'autocomplete' => 'off', 'class' => array('brief-check-field')),
+        '#suffix' => $div,
+        '#required' => $required,
+        '#attached' => array(
+            'js'    => array(
+                $common_path . '/js/check_brief.js',
+            ),
+        ),
+    );
+    return $element;
+}
+
+/**
+ * 生成裁切缩略图字段，新版
+ * @param array $config
+ *  $config = array(
+ *      'field_name'     => '',//字段名，必须
+ *      'default_value'  => '',//默认值，可选，默认为空
+ *      'thumb_width'    => 200,//裁切缩略图宽度，可选，默认200
+ *      'thumb_height'   => 200,//裁切缩略图高度，可选，默认200
+ *      'sub_dir'        => 'default',//缩略图保存子目录，可选，默认default子目录
+ *      'image_title'    => '图片加载失败',//图片alt属性值，可选，默认图片加载失败
+ *      'form_id'        => 'form',//当前表单ID，可选，默认为form
+ *      'form_verify'    => 0,//是否对表单进行缩略图未上传验证，可选，默认0
+ *  );
+ * @return array
+ */
+function plum_crop_thumbnail_field (array $config) {
+    $common_path = drupal_get_path('module', 'common');
+    $default_config = array(
+        'field_name'     => '',
+        'default_value'  => '',
+        'thumb_width'    => 200,
+        'thumb_height'   => 200,
+        'sub_dir'        => 'default',
+        'image_title'    => '图片加载失败',
+        'form_id'        => 'form',
+        'form_verify'    => 0,
+        'guide_icon'     => "/{$common_path}/jcrop/appbg_ad.png",
+    );
+    $merge_config = array_merge($default_config, $config);
+    $merge_config['guide_icon'] = $merge_config['default_value'] ? $merge_config['default_value'] : $merge_config['guide_icon'];
+    $thumb_wh = "{$merge_config['thumb_width']}|{$merge_config['thumb_height']}";
+    $form_verify = "{$merge_config['form_id']}|{$merge_config['form_verify']}";
+    //加载kindeditor库
+    drupal_add_js($common_path . '/kindeditor/kindeditor.js');
+    drupal_add_js($common_path . '/kindeditor/lang/zh_CN.js');
+    drupal_add_css($common_path . '/kindeditor/themes/default/default.css');
+
+    drupal_add_css($common_path . '/css/common.css');
+    drupal_add_css($common_path . '/kindeditor/themes/default/default.css');
+
+    drupal_add_js($common_path . '/jcrop/jquery.Jcrop.min.js');
+    drupal_add_css($common_path . '/jcrop/jquery.Jcrop.min.css');
+    drupal_add_js($common_path . '/js/ajaxfileupload.js');
+    drupal_add_js($common_path . '/js/thumbnail_image_upload.js');
+    drupal_add_css($common_path . '/css/common.css');
+
+    $div = array(
+        '<div id="addImgLi2" class="noneborder" style="width: 84px;">',
+        '<div id="add-image-panel" style="cursor: pointer;">',
+        '<img class="img-thumbnail" id="image-tbl-display" width="77" src="'.$merge_config['guide_icon'].'">',
+        '</div>',
+        '<input type="hidden" name="'.$merge_config['field_name'].'" id="list-thumbnail-image" value="'.$merge_config['default_value'].'" />',
+        '<span>裁切图片</span>',
+        '<input type="hidden" name="thumb_wh" id="thumb-wh" value="'.$thumb_wh.'" />',
+        '<input type="hidden" name="sub_dir" id="sub-dir" value="'.$merge_config['sub_dir'].'" />',
+        '<input type="hidden" name="img_title" id="img-title" value="'.$merge_config['image_title'].'" />',
+        '<input type="hidden" name="form_verify" id="form-verify" value="'.$form_verify.'" />',
+        '</div>',
+    );
+    $div = implode('', $div);
+
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => $div,
+    );
+    return $element;
+}
+
+/**
+ * @param $config
+ * @return array
+ * 可在同一页面多次调用的
+ */
+function plum_copy_more_img_upload($config){
+    $common_path = drupal_get_path('module', 'common');
+    $default_config = array(
+        'field_name'     => '',
+        'default_value'  => '',
+        'thumb_width'    => 200,
+        'thumb_height'   => 200,
+        'sub_dir'        => 'default',
+        'image_title'    => '图片加载失败',
+        'form_id'        => 'form',
+        'form_verify'    => 0,
+        'addkindeditor'  => true,
+        'guide_icon'     => "/{$common_path}/jcrop/appbg_ad.png",
+    );
+    $merge_config = array_merge($default_config, $config);
+    $merge_config['guide_icon'] = $merge_config['default_value'] ? $merge_config['default_value'] : $merge_config['guide_icon'];
+    $thumb_wh = "{$merge_config['thumb_width']}|{$merge_config['thumb_height']}";
+    $form_verify = "{$merge_config['form_id']}|{$merge_config['form_verify']}";
+    static $img_load = true;
+    if($img_load){
+        if($merge_config['addkindeditor'])
+        drupal_add_js($common_path . '/kindeditor/kindeditor.js');
+
+        drupal_add_js($common_path . '/jcrop/jquery.Jcrop.min.js');
+        drupal_add_css($common_path . '/jcrop/jquery.Jcrop.min.css');
+        drupal_add_js($common_path . '/js/ajaxfileupload.js');
+        drupal_add_js($common_path . '/js/thumbnail_image_upload_custom.js');
+        drupal_add_css($common_path . '/css/common.css');
+
+        drupal_add_css($common_path . '/kindeditor/themes/default/default.css');
+        $img_load = false;
+    }
+
+    $div = array(
+        '<div id="addImgLi2_'.$merge_config['field_name'].'" class="noneborder" style="width: 84px;">',
+        '<div id="add-image-panel_'.$merge_config['field_name'].'" style="cursor: pointer;">',
+        '<input type="image"  name="field_name" src="'.$merge_config['guide_icon'].'" class="img-thumbnail" onclick="return false;"  width="77" id="'.$merge_config['field_name'].'" />',
+        '</div>',
+        '<input type="hidden" name="'.$merge_config['field_name'].'" id="list-thumbnail-image_'.$merge_config['field_name'].'" value="'.$merge_config['default_value'].'" />',
+        '<span>裁切图片</span>',
+        '<input type="hidden" name="thumb_wh" id="thumb-wh_'.$merge_config['field_name'].'" value="'.$thumb_wh.'" />',
+        '<input type="hidden" name="sub_dir" id="sub-dir_'.$merge_config['field_name'].'" value="'.$merge_config['sub_dir'].'" />',
+        '<input type="hidden" name="img_title" id="img-title_'.$merge_config['field_name'].'" value="'.$merge_config['field_name'].'" />',
+        '<input type="hidden" name="form_verify" id="form-verify_'.$merge_config['field_name'].'" value="'.$form_verify.'" />',
+        '</div>',
+    );
+    $div = implode('', $div);
+
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => $div,
+    );
+    return $element;
+}
+
+
+/**
+ * 生成自动完成字段
+ * @param array $config
+ *  $config = array(
+ *      'field_name'     => '',//字段名，必须
+ *      'field_label'    => '',//字段标签，必须
+ *      'list_limit'     => 20,//列表限制，可选，默认为20
+ *      'request_path'   => '',//异步请求URL，必须
+ *      'default_value'  => 0,//默认值，可选，默认为0
+ *      'default_label'  => '',//默认标签，可选，默认为空
+ *      'form_id'        => 'form',//当前表单ID，可选，默认为form
+ *      'form_verify'    => 0,//是否对表单进行缩略图未上传验证，可选，默认0
+ *  );
+ * @return array
+ */
+function plum_auto_complete_field(array $config) {
+    $common_path = drupal_get_path('module', 'common');
+    $default_config = array(
+        'field_name'     => '',
+        'field_label'    => '',
+        'list_limit'     => 20,
+        'request_path'   => '',
+        'default_value'  => 0,
+        'default_label'  => '',
+        'form_id'        => 'form',
+        'form_verify'    => 0,
+    );
+    $merge_config   = array_merge($default_config, $config);
+    //处理变量
+    $form_verify    = "{$merge_config['form_id']}|{$merge_config['form_verify']}";
+    $request_limit  = "{$merge_config['request_path']}|{$merge_config['list_limit']}";
+    //加载静态文件
+    drupal_add_css($common_path . '/css/auto-completer.css');
+    drupal_add_js($common_path . '/js/jquery.autocompleter.js');
+    drupal_add_js($common_path . '/js/auto-completer.js');
+
+    $div    = array(
+        '<div class="field">',
+        '<div class="nope-auto-icon"><span>'.$merge_config['default_label'].'</span></div>',
+        '<label id="nope-auto-label" for="nope-auto-completer">'.$merge_config['field_label'].'</label>',
+        '<input class="form-control form-text" type="text" name="'.$merge_config['field_name'].'" id="nope-auto-completer" placeholder="请输入关键词以匹配查找" maxlength="256" value="'.$merge_config['default_value'].'" />',
+        '<input type="hidden" id="auto-form-verify" value="'.$form_verify.'" />',
+        '<input type="hidden" id="auto-request-limit" value="'.$request_limit.'" />',
+        '</div>',
+    );
+
+    $div = implode('', $div);
+
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => $div,
+    );
+    return $element;
+}
+#pragma mark - 解析表单提交
+/**
+ * 由表单提交解析出字符串值
+ * @param array $form_state
+ * @param string $name
+ * @param string $default
+ * @return string
+ */
+function plum_parse_string_form_state(array $form_state, $name, $default = '') {
+    return isset($form_state['values'][$name]) ? trim($form_state['values'][$name]) : $default;
+}
+
+/**
+ * 由表单提交解析出整型值
+ * @param array $form_state
+ * @param string $name
+ * @param int $default
+ * @return int
+ */
+function plum_parse_int_form_state(array $form_state, $name, $default = 0) {
+    return isset($form_state['values'][$name]) ? intval($form_state['values'][$name]) : $default;
+}
+
+/**
+ * 由表单提交解析出数组值
+ * @param array $form_state
+ * @param string $name
+ * @param array $default
+ * @return array
+ */
+function plum_parse_array_form_state(array $form_state, $name, $default = array()) {
+    return isset($form_state['values'][$name]) && is_array($form_state['values'][$name]) ? $form_state['values'][$name] : $default;
+}
+
+function plum_fetch_drupal_form_id($function) {
+    return str_replace('_', '-', $function);
+}
+
+/**
+ * 解析出菜单链接
+ * @param string $module 模块名，如'category'
+ * @param string $link_type 链接类型，如'slide list'
+ * @param string|array $args 附加参数，可以为字符串或数组
+ * @param bool $goto 是否使用drupal_goto跳转
+ * @return bool|string
+ */
+function plum_parse_menu_link($module, $link_type, $args = '', $goto = false) {
+    $menu_func  = $module . '_menu';
+    $path       = false;
+    if (function_exists($menu_func)) {
+        $items = $menu_func();
+        if ($items) {
+            foreach ($items as $key => $val) {
+                if (isset($val['link type']) && $val['link type'] == $link_type) {
+                    $path = $key;
+                    break;
+                }
+            }
+        }
+    }
+    if ($path) {
+        $args = is_array($args) ? implode('/', $args) : $args;
+        $path = ($goto ? '' : '/' ) . trim($path, '/') . ($args ? '/' . $args : '' );
+    }
+    return $path;
+}
+
+/**
+ * 生成按钮式链接
+ * @param string $name 按钮名称，如编辑，删除
+ * @param string $url 链接跳转URL
+ * @param string $type 链接类型，枚举值包括default、primary、success、info、warning、danger
+ * @param bool $blank 是否在新标签页打开，默认为false
+ * @return string
+ */
+function plum_oper_link_button($name, $url, $type = 'info', $blank = false) {
+    $type_arr   = array('default', 'primary', 'success', 'info', 'warning', 'danger');
+    $type       = in_array($type, $type_arr) ? $type : 'info';
+    $link       = '<a '.($blank ? 'target="_blank"' : '').' class="btn  btn-'.$type.'" href="'.$url.'" role="button">'.$name.'</a>';
+    return $link;
+}
+
+function plum_bootstrap_thumbnail_img($src, $width = 100, $alt = '图片') {
+    $img = '<img src="'.$src.'" alt="'.$alt.'" width="'.$width.'px" class="img-thumbnail" />';
+    return $img;
+}
+
+function _auto_load_work() {
+    $common_path = drupal_get_path('module', 'common');
+    drupal_add_css($common_path . '/css/common.css');
+}
+
+function plum_select_level_field(array $config) {
+    $common_path    = drupal_get_path('module', 'common');
+    //加载静态文件
+    drupal_add_js($common_path . '/js/level-select.js');
+    $default_config = array(
+        'label_title'           => '请选择',
+        'field_name'            => 'plum_level_field',
+        'level_number'          => 2,
+        'request_url'           => '',
+        'field_title'           => array('请选择', '请选择'),
+        'default_value'         => array(0, 0),
+        'form_id'               => 'form',
+        'form_verify'           => 0,
+    );
+    $merge_config = array_merge($default_config, $config);
+    $request_level= "{$merge_config['request_url']}|{$merge_config['level_number']}";
+    $form_verify  = "{$merge_config['form_id']}|{$merge_config['form_verify']}";
+    $level_number = intval($merge_config['level_number']);
+
+    $html = '';
+    if ($level_number >= 2) {
+        $width_ratio = floor((100 / $level_number) - ($level_number * 1));
+        for ($i = 0; $i < $merge_config['level_number']; $i++) {
+            $html .= '<input type="hidden" value="'.$merge_config['default_value'][$i].'" name="'.$merge_config['field_name'].$i.'" id="plum-level-value'.$i.'" class="plum-level-value" />';
+            $html .= '<select id="plum-level-select'.$i.'" data-value="'.$i.'" class="plum-level-select form-control" style="float: left;width: '.$width_ratio.'%;margin-right: 20px;">';
+            $html .= '<option value="0">----'.$merge_config['field_title'][$i].'----</option>';
+            $html .= '</select>';
+        }
+    }
+
+    $div = array(
+        '<div style="overflow: auto;margin-bottom: 12px;">',
+        '<input type="hidden" id="plum-request-level" value="'.$request_level.'" />',
+        '<input type="hidden" id="level-verify" value="'.$form_verify.'" />',
+        '<label style="display: block;" for="first-select">'.$merge_config['label_title'].'</label>',
+        $html,
+        '</div>',
+    );
+    $element = array(
+        '#type' => 'markup',
+        '#markup' => implode('', $div),
+    );
+    return $element;
+}
+
+/**
+ * 缓存管理员菜单
+ * @param string $output
+ */
+function plum_cache_admin_menu($output) {
+    global $user;
+
+    $cache_dir = PLUM_DIR_CACHE . '/menu';
+    //检查log目录是否存在,默认存放路径为==根目录/sites/app/storage/cache/menu
+    if (!file_exists($cache_dir)) {
+        //递归地创建目录，并赋予775权限，拥有者/用户组可写
+        if (!mkdir($cache_dir, 0775, true)) {
+            //创建失败，触发错误并退出
+            trigger_error('menu 缓存目录创建失败', E_USER_ERROR);
+            exit;
+        }
+    }
+    //检查log目录是否可写
+    if (!is_writable($cache_dir)) {
+        //更改目录的权限
+        if (!chmod($cache_dir, 0775)) {
+            //更改权限失败，触发错误并退出
+            trigger_error('menu 缓存目录不可写', E_USER_ERROR);
+            exit;
+        }
+    }
+    $filename = $cache_dir . '/admin-' . $user->uid . '-menu.menu';
+    if (!($handler = @fopen($filename, 'w'))) {
+        //文件流打开失败时触发错误，并退出
+        trigger_error('管理员菜单缓存文件打开失败', E_USER_ERROR);
+        exit;
+    }
+
+    $info = "\n" . '<ul id="admin-sidebar-menu">' . $output . '</ul>';
+    //开始写入
+    if (($write_byte = fwrite($handler, $info)) === false) {
+        $error_msg = '菜单缓存文件写入失败';
+        //检查磁盘空间
+        $free_space = disk_free_space(PLUM_DIR_CACHE);
+        //磁盘空间不足
+        if ($free_space && $write_byte > $free_space) {
+            $error_msg .= '磁盘空间不足';
+        }
+        //写入失败时，触发错误并退出
+        trigger_error($error_msg, E_USER_ERROR);
+        fclose($handler);
+        exit;
+    }
+    //关闭文件流
+    fclose($handler);
+}
+
+/**
+ * 读取管理员菜单
+ * @return string
+ */
+function plum_fetch_admin_menu() {
+    global $user;
+
+    $output = '';
+
+    $cache_dir = PLUM_DIR_CACHE . '/menu';
+    $filename = $cache_dir . '/admin-' . $user->uid . '-menu.menu';
+
+    if (!file_exists($filename)) {
+        //文件流打开失败时触发错误，并退出
+        trigger_error('管理员菜单缓存文件不存在', E_USER_ERROR);
+        return $output;
+    }
+
+    $output = file_get_contents($filename);
+
+    return $output;
+}
+
+//自动加载机制
+_auto_load_work();

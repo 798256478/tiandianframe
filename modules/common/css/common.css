@@ -1,0 +1,84 @@
+#preview-pane .preview-container {
+    overflow: hidden;
+}
+.jcrop-holder {
+    float: left;
+}
+#preview-pane, .preview-panel {
+    display: block;
+    padding: 6px;
+    border: 1px rgba(0,0,0,.4) solid;
+    background-color: white;
+
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+
+    -webkit-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+}
+#preview-pane {
+    float: right;
+}
+.image-upload-native p{
+    display: inline-flex;
+}
+.image-upload-native {
+    display: inline-block;
+    margin: 0 4px;
+}
+
+#image-display-box{
+    padding: 0 16px;
+}
+
+#image-display-box>span{
+    position: relative;
+    display: inline-block;
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    height:160px;
+    background: #eeeeee;
+    overflow: hidden;
+}
+#image-display-box span.close-img{
+    margin:0;
+    position: absolute;
+    right: 5px;
+    top:5px;
+    background: #ff0000;
+    display: block;
+    width:20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    color: #fff;
+    font-family: "Microsoft Yahei";
+    font-size: 16px;
+    display: none;
+    cursor: pointer;
+}
+#image-display-box img.img-thumbnail{
+    float: left;
+    display: inline-block;
+    border: none;
+    border-radius: 0;
+    padding:0;
+    background: #eee;
+}
+/* kindeditor dialog padding */
+.ke-dialog-body {
+    padding : 10px 8px;
+    overflow: scroll;
+}
+
+.search-form-wrapper input {
+    width: auto;
+    display: inline-block;
+}
+
+.btn {
+    margin: 0 4px;
+}

@@ -1,0 +1,5 @@
+name        = 文章
+description = 文章模块
+core        = 7.x
+package     = tdframe
+version     = 7.x-34

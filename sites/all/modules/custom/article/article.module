@@ -1,0 +1,46 @@
+<?php
+
+function article_menu() {
+	$items = array();
+	$items['admin/article'] = array(
+		'title'            => '文章管理',
+		'access arguments' => array('article core manage'),
+		'weight'           => 21,
+	);
+	//-------------article(文章管理)-----------------------
+	$items['admin/article/core'] = array(
+		'title'            => '文章管理',
+		'file'             => 'article_core.admin.inc',
+		'page callback'    => 'article_core_admin_list',
+		'access arguments' => array('article core manage'),
+		'type'             => MENU_NORMAL_ITEM,
+		'weight'           => 1,
+	);
+	$items['admin/article/core/list'] = array(
+		'title'            => '文章列表',
+		'type'             => MENU_DEFAULT_LOCAL_TASK,
+		'access arguments' => array('article core manage'),
+		'weight'           => 2,
+		'link type'        => 'core list' 
+	);
+	$items['admin/article/core/edit'] = array(
+		'title'            => '文章新增',
+		'file'             => 'article_core.admin.inc',
+		'page callback'    => 'drupal_get_form',
+		'page arguments'   => array('article_core_admin_edit', 4),
+		'access arguments' => array('article core manage'),
+		'type'             => MENU_LOCAL_TASK,
+		'weight'           => 3,
+		'link type'        => 'core edit'
+	);
+	return $items;
+}
+
+function article_permission() {
+	return array(
+		'article core manage' => array(
+			'title'       => t('文章管理'),
+			'description' => t('文章的添加、编辑和删除'),
+		),
+	);
+}

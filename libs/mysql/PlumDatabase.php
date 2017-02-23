@@ -33,8 +33,8 @@ class Libs_Mysql_PlumDatabase
 		if(empty($condition)) {
 			return false;
 		} elseif (is_array($condition)) {
-			if(count($condition) == 2 && isset($condition['where'])) && isset($condition['arg']){
-				$where = self::format($condition['where'], $condition['arg'])
+			if(count($condition) == 2 && isset($condition['where']) && isset($condition['arg'])){
+				$where = self::format($condition['where'], $condition['arg']);
 			} else {
 				$where = self::implode_field_value($condition, ' AND ');
 			}
@@ -122,7 +122,7 @@ class Libs_Mysql_PlumDatabase
 		return $ret ? $ret : array();
 	}
 
-	    //获取结果集所有行
+    //获取结果集所有行
     public static function fetch_all($sql, $arg = array(), $keyfield = '', $silent = false) {
         $data = array();
         $query = self::query($sql, $arg, $silent, false);

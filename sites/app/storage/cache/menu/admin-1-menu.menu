@@ -1,0 +1,30 @@
+
+<ul id="admin-sidebar-menu"><li class="expandable"><a href="/admin/content">内容</a>
+<ul class="dropdown"><li><a href="/node/add">添加内容</a></li></ul></li><li class="expandable"><a href="/admin/structure">Structure</a>
+<ul class="dropdown"><li class="expandable"><a href="/admin/structure/types">内容类型</a>
+<ul class="dropdown"><li><a href="/admin/structure/types/add">Add content type</a></li></ul></li><li class="expandable"><a href="/admin/structure/block">区块</a>
+<ul class="dropdown"><li><a href="/admin/structure/block/add">添加区块</a></li><li class="expandable"><a href="/admin/structure/block/list/bartik">Bartik</a>
+<ul class="dropdown"><li><a href="/admin/structure/block/list/bartik/add">添加区块</a></li></ul></li></ul></li></ul></li><li class="expandable"><a href="/admin/appearance">外观</a>
+<ul class="dropdown"><li class="expandable"><a href="/admin/appearance/settings">设置</a>
+<ul class="dropdown"><li><a href="/admin/appearance/settings/bartik">Bartik</a></li><li><a href="/admin/appearance/settings/bootstrap">Bootstrap</a></li></ul></li></ul></li><li class="expandable"><a href="/admin/people">用户</a>
+<ul class="dropdown"><li><a href="/admin/people/create">添加用户</a></li><li class="expandable"><a href="/admin/people/permissions">权限</a>
+<ul class="dropdown"><li><a href="/admin/people/permissions/roles">角色</a></li></ul></li></ul></li><li class="expandable"><a href="/admin/modules">模块</a>
+<ul class="dropdown"><li><a href="/admin/modules/uninstall">卸载</a></li></ul></li><li class="expandable"><a href="/admin/config">配置</a>
+<ul class="dropdown"><li class="expandable"><a href="/admin/config/content">Content authoring</a>
+<ul class="dropdown"><li class="expandable"><a href="/admin/config/content/formats">Text formats</a>
+<ul class="dropdown"><li><a href="/admin/config/content/formats/add">Add text format</a></li><li><a href="/admin/config/content/formats/plain_text">Plain text</a></li></ul></li></ul></li><li class="expandable"><a href="/admin/config/regional">Regional and language</a>
+<ul class="dropdown"><li><a href="/admin/config/regional/settings">Regional settings</a></li><li class="expandable"><a href="/admin/config/regional/date-time">Date and time</a>
+<ul class="dropdown"><li class="expandable"><a href="/admin/config/regional/date-time/formats">格式</a>
+<ul class="dropdown"><li><a href="/admin/config/regional/date-time/formats/add">Add format</a></li></ul></li><li><a href="/admin/config/regional/date-time/locale">Localize</a></li></ul></li><li class="expandable"><a href="/admin/config/regional/language">语言</a>
+<ul class="dropdown"><li><a href="/admin/config/regional/language/add">添加语言</a></li><li><a href="/admin/config/regional/language/configure">Detection and selection</a></li></ul></li><li class="expandable"><a href="/admin/config/regional/translate">翻译</a>
+<ul class="dropdown"><li><a href="/admin/config/regional/translate/translate">翻译</a></li><li><a href="/admin/config/regional/translate/import">导入</a></li><li><a href="/admin/config/regional/translate/export">导出</a></li></ul></li></ul></li><li class="expandable"><a href="/admin/config/search">Search and metadata</a>
+<ul class="dropdown"><li><a href="/admin/config/search/clean-urls">简洁链接</a></li></ul></li><li class="expandable"><a href="/admin/config/services">Web服务</a>
+<ul class="dropdown"><li><a href="/admin/config/services/rss-publishing">RSS publishing</a></li></ul></li><li class="expandable"><a href="/admin/config/media">媒体</a>
+<ul class="dropdown"><li><a href="/admin/config/media/file-system">文件系统</a></li><li><a href="/admin/config/media/image-toolkit">Image toolkit</a></li></ul></li><li class="expandable"><a href="/admin/config/development">开发</a>
+<ul class="dropdown"><li><a href="/admin/config/development/performance">性能</a></li><li><a href="/admin/config/development/logging">Logging and errors</a></li><li><a href="/admin/config/development/maintenance">Maintenance mode</a></li></ul></li><li class="expandable"><a href="/admin/config/people">用户</a>
+<ul class="dropdown"><li><a href="/admin/config/people/accounts">帐户设置</a></li><li><a href="/admin/config/people/ip-blocking">IP address blocking</a></li></ul></li><li class="expandable"><a href="/admin/config/administration">管理</a>
+<ul class="dropdown"><li><a href="/admin/config/administration/admin_menu">Administration menu</a></li></ul></li><li class="expandable"><a href="/admin/config/system">系统</a>
+<ul class="dropdown"><li><a href="/admin/config/system/site-information">站点信息</a></li><li><a href="/admin/config/system/actions">动作</a></li><li><a href="/admin/config/system/cron">Cron</a></li></ul></li></ul></li><li class="expandable"><a href="/admin/reports">报告</a>
+<ul class="dropdown"><li><a href="/admin/reports/status">状态报告</a></li><li><a href="/admin/reports/dblog">Recent log messages</a></li><li><a href="/admin/reports/access-denied">Top &#039;access denied&#039; errors</a></li><li><a href="/admin/reports/page-not-found">Top &#039;page not found&#039; errors</a></li></ul></li><li class="expandable"><a href="/admin/article">文章管理</a>
+<ul class="dropdown"><li class="expandable"><a href="/admin/article/core" class="active">文章管理</a>
+<ul class="dropdown"><li><a href="/admin/article/core/edit">文章新增</a></li></ul></li></ul></li></ul>

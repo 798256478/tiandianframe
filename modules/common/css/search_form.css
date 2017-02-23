@@ -1,0 +1,14 @@
+.form-group{
+    float: left;
+    width: 150px;
+    margin: 0px 5px;
+}
+#search-sumbit{
+    background-color: #f0ad4e;
+    border-color: #eea236;
+    color: #fff;
+    margin-top:25px ;
+}
+#edit-submit{
+    margin:25px 0px 0px 20px ;
+}

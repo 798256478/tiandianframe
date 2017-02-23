@@ -35,7 +35,7 @@ class Libs_Mysql_MysqliDriver
 		if($link->connect_errno) {
 			$this->halt("mysqli connect failed. connect error:{$link->connect_error}. with config:" . json_encode($this->config));
 		}
-		$link->set_charset(isset($this->config['dbcharset'] ? $this->config['dbcharset'] : 'utf8'));
+		$link->set_charset(isset($this->config['dbcharset']) ? $this->config['dbcharset'] : 'utf8');
 		$this->cur_link = $link;
 		unset($link);
 	}
@@ -103,11 +103,12 @@ class Libs_Mysql_MysqliDriver
 		return $query ? $query->num_rows : 0;
 	}
 
-	/**
+	/*
 	 * 结果集query中的字段数目
 	 * @param  [type] $query [description]
 	 * @return [type]        [description]
 	 */
+	 
 	public function num_fields($query) {
 		return $query ? $query->field_count : null;
 	}
@@ -188,7 +189,7 @@ class Libs_Mysql_MysqliDriver
 	 * @return [type] [description]
 	 */
 	public function insert_id() {
-		return ($id = $this->cur_link->insert_id) >=0 ? $id : $this->result($this->query("SELECT last_insert_id()"), 0)
+		return ($id = $this->cur_link->insert_id) >= 0 ? $id : $this->result($this->query("SELECT last_insert_id()"), 0);
 	}
 
 	/**

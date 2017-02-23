@@ -1,0 +1,12 @@
+name = "通用模块"
+description = "提供通用的调用方法"
+package = '梅雨'
+version = VERSION
+core = 7.x
+; configure = 
+; files[] = tests/lock.test
+; Information added by  packaging script on 2013-11-27
+version = "7.x-2.6"
+core = "7.x"
+datestamp = "1395157609"
+
