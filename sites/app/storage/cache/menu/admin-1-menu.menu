@@ -25,6 +25,6 @@
 <ul class="dropdown"><li><a href="/admin/config/people/accounts">帐户设置</a></li><li><a href="/admin/config/people/ip-blocking">IP address blocking</a></li></ul></li><li class="expandable"><a href="/admin/config/administration">管理</a>
 <ul class="dropdown"><li><a href="/admin/config/administration/admin_menu">Administration menu</a></li></ul></li><li class="expandable"><a href="/admin/config/system">系统</a>
 <ul class="dropdown"><li><a href="/admin/config/system/site-information">站点信息</a></li><li><a href="/admin/config/system/actions">动作</a></li><li><a href="/admin/config/system/cron">Cron</a></li></ul></li></ul></li><li class="expandable"><a href="/admin/reports">报告</a>
-<ul class="dropdown"><li><a href="/admin/reports/status">状态报告</a></li><li><a href="/admin/reports/dblog">Recent log messages</a></li><li><a href="/admin/reports/access-denied">Top &#039;access denied&#039; errors</a></li><li><a href="/admin/reports/page-not-found">Top &#039;page not found&#039; errors</a></li></ul></li><li class="expandable"><a href="/admin/article">文章管理</a>
-<ul class="dropdown"><li class="expandable"><a href="/admin/article/core" class="active">文章管理</a>
+<ul class="dropdown"><li><a href="/admin/reports/status">状态报告</a></li><li><a href="/admin/reports/dblog">Recent log messages</a></li><li><a href="/admin/reports/access-denied">Top &#039;access denied&#039; errors</a></li><li><a href="/admin/reports/page-not-found">Top &#039;page not found&#039; errors</a></li></ul></li><li class="expandable"><a href="/admin/article" class="active">文章管理</a>
+<ul class="dropdown"><li class="expandable"><a href="/admin/article/core">文章管理</a>
 <ul class="dropdown"><li><a href="/admin/article/core/edit">文章新增</a></li></ul></li></ul></li></ul>

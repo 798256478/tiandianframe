@@ -28,8 +28,38 @@ function article_core_admin_edit($form, &$form_state, $ar_id = 0) {
 	$form['basic_set']['id'] = array(
 		'#type'          => 'textfield', //文本输入框
 		'#title'         => t('文章id'),
-		'#default_value' => $ar_id,
+		'#default_value' => '',
+		'#placeholder'   => t('请输入id'),
 		'#required'      => true,
+	);
+	$form['basic_set']['pass'] = array(
+		'#type'          => 'password_confirm',
+		'#description'   => t('确认密码 '),
+		'#required'      => true,
+	);
+	$form['basic_set']['pid'] = array(
+		'#type'          => 'value',
+		'#value'         => 123,
+	);
+	$form['basic_set']['deadline'] = array(
+		'#title'         => t('最后期限'),
+		'#type'          => 'date',
+		'#default'       => array(
+			'year'  => format_date(time(), 'custom', 'Y'),
+			'month' => format_date(time(), 'custom', 'n'),
+			'day'   => format_date(time(), 'custom', 'j'),
+		),
+	);
+	$form['basic_set']['weight'] = array(
+		'#type'          => 'weight',
+		'#title'         => t('重量'),
+		'#default_value' => 0,
+		'#delta'         => 20,
+	);
+	$form['picture']['picture_upload'] = array(
+		'#type'          => 'file',
+		'#title'         => '上传图片',
+		'#size'          => 48,
 	);
 	$is_top = array(0 => '置顶', 1 => '不置顶');
 	$form['basic_set']['ar_istop'] = array(
@@ -109,11 +139,18 @@ function article_core_admin_edit($form, &$form_state, $ar_id = 0) {
     );
 	//多图片上传
 	$form['basic_content']['ar_image'] = plum_multi_image_field($mimage_config);
-
-	$form['#submit'][] = 'article_core_admin_edit_submit';//提交表单
-	$form              = system_settings_form($form);
+	
+	$form['#validate'][] = 'article_core_admin_validate';
+	$form['#submit'][]   = 'article_core_admin_edit_submit';//提交表单
+	$form                = system_settings_form($form);
 	
 	return $form;
+}
+
+function article_core_admin_validate($form, &$form_state) {
+	if(!plum_is_phone($form_state['values']['id'])){
+		form_set_error('id', 'id是格式不正确');
+	}
 }
 
 function article_core_admin_edit_submit($form, &$form_state) {
