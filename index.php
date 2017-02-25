@@ -3,7 +3,7 @@
 define('DRUPAL_ROOT', dirname(__FILE__));//定义根目录绝对路径，如：D:\wampstack\apache2\htdocs\tdframe
 require_once "inc.php";//定义系统常量
 define('PLUM_ENV', PLUM_DEVELOPMENT_ENV);
-require_once PLUM_DIR_BOOTSTRAP . '/bootload.inc';//引导文件
+require_once PLUM_DIR_BOOTSTRAP . '/bootload.inc';//引导文件 
 
 $query        = plum_parse_request_uri();
 $prefix       = array_shift($query);
